@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import { DoctorContext } from "../context/DoctorContext";
 import { AdminContext } from "../context/AdminContext";
 import { AlertCircle, ArrowLeft, Hospital } from "lucide-react";
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 
 const Login = () => {
@@ -14,6 +14,7 @@ const Login = () => {
   const [error, setError] = useState("");
 
   const { setDToken } = useContext(DoctorContext);
+  const navigate = useNavigate()
   const { setAToken } = useContext(AdminContext);
   const backendUrl = "http://localhost:4000";
 
@@ -38,9 +39,12 @@ const Login = () => {
       if (data.success) {
         if (state === "Admin") {
           setAToken(data.token);
+          navigate('/')
           localStorage.setItem("aToken", data.token);
         } else {
           setDToken(data.token);
+          navigate('/')
+
           localStorage.setItem("dToken", data.token);
         }
       } else {
@@ -64,7 +68,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 p-4 w-full ">
       <div
         className={`
         transform transition-all duration-300 ease-in-out

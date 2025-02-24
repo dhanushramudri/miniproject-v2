@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { AdminContext } from "../../context/AdminContext";
 import {
   User,
@@ -17,17 +17,63 @@ import {
 } from "lucide-react";
 
 const DoctorsList = () => {
-  const { doctors, changeAvailability, aToken, getAllDoctors } =
+  const { doctors,doctorsByAdmin, changeAvailability, aToken ,getAllDoctorsByAdmin} =
+
     useContext(AdminContext);
+    const [adminData , setAdminData] = useState();
+    const [loading,setLoading] = useState(true);
+    const [error,setError] = useState();
 
   const availableTimeSlots = ["07:00 pm", "07:30 pm", "08:00 pm", "08:30 pm"];
 
+
+  useEffect(() => {
+    const fetchAdminDetails = async () => {
+      try {
+        const token = localStorage.getItem("aToken");
+        if (!token) {
+          throw new Error("No authentication token found");
+        }
+
+        const response = await fetch(
+          "http://localhost:4000/api/admin/profile",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await response.json();
+
+        if (data.success) {
+          // Check if the admin is approved
+          if (!data.admin.isApproved) {
+            throw new Error("Admin is not approved yet");
+          }
+
+          setAdminData(data.admin);
+        } else {
+          throw new Error(data.message || "Failed to fetch admin details");
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAdminDetails();
+  }, []);
+
   useEffect(() => {
     if (aToken) {
-      getAllDoctors();
+      // getAllDoctors();
+      getAllDoctorsByAdmin();
     }
-  }, [aToken]);
+  }, [aToken,changeAvailability]);
 
+ 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -75,7 +121,7 @@ const DoctorsList = () => {
     </div>
   );
 
-  if (!doctors?.length) {
+  if (!doctorsByAdmin?.length) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3 text-gray-500">
         <AlertCircle className="w-12 h-12" />
@@ -88,11 +134,11 @@ const DoctorsList = () => {
     <div className="p-6 max-h-[90vh] overflow-y-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Hospital Doctors</h1>
-        <p className="text-gray-600">Total Doctors: {doctors.length}</p>
+        <p className="text-gray-600">Total Doctors: {doctorsByAdmin.length}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {doctors.map((doctor, index) => (
+        {doctorsByAdmin.map((doctor, index) => (
           <div
             key={doctor._id || index}
             className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow duration-300"
@@ -118,7 +164,7 @@ const DoctorsList = () => {
                     className="sr-only peer"
                   />
                   <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                  <span className="ms-3 text-sm font-medium text-gray-700">
+                  <span className={doctor.available? 'text-green-900 ms-3 text-sm font-medium ':'text-red-800 ms-3 text-sm font-medium'}>
                     {doctor.available ? "Available" : "Unavailable"}
                   </span>
                 </label>

@@ -3,7 +3,7 @@ import { assets } from '../assets/assets'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { AppContext } from '../context/AppContext'
 
-const Navbar = () => {
+const UserNavbar = () => {
 
   const navigate = useNavigate()
 
@@ -17,7 +17,7 @@ const Navbar = () => {
   }
 
   return (
-    <div className='flex items-center justify-between text-sm py-4 mb-5 border-b border-b-[#ADADAD]'>
+    <div className='flex items-center justify-between text-sm  mb-5 border-b px-14 py-4 border-b-[#ADADAD] w-full'>
       <img onClick={() => navigate('/')} className='w-44 cursor-pointer' src={assets.logo} alt="" />
       <ul className='md:flex items-start gap-5 font-medium hidden'>
         <NavLink to='/' >
@@ -74,4 +74,4 @@ const Navbar = () => {
   )
 }
 
-export default Navbar
+export default UserNavbar

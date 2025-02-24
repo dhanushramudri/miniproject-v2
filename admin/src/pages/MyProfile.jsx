@@ -46,7 +46,7 @@ const MyProfile = () => {
     }
 
     return userData ? (
-        <div className='max-w-lg flex flex-col gap-2 text-sm pt-5'>
+        <div className='w-full flex justify-center p-10 bg-blue-100 items-center flex-col gap-2 text-sm pt-5'>
 
             {isEdit
                 ? <label htmlFor='image' >

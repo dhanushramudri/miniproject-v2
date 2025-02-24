@@ -5,6 +5,7 @@ import { Route, Routes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "./components/Navbar";
+import UserNavbar from "./components/UserNavbar";
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./pages/Admin/Dashboard";
 import AllAppointments from "./pages/Admin/AllAppointments";
@@ -31,14 +32,15 @@ const App = () => {
   const { aToken } = useContext(AdminContext);
 
   return (
-    <div className="bg-[#F8F9FD]">
+    <div className="bg-[#F8F9FD] flex justify-center items-center flex-col ">
       <ToastContainer />
-      <Navbar />
-      <div className="flex items-start">
+      { aToken || dToken ? <Navbar /> :<UserNavbar />}
+      
+      <div className="flex items-start w-full ">
         <Sidebar />
         <Routes>
-              <Route path="/aduser" element={ aToken ? ( <AdminDetails /> ) : dToken ? ( <DoctorDashboard /> ) : ( <Login /> )  } />
-              <Route path='/login' element={<Login />} />
+              <Route path="/" element={ aToken ? ( <AdminDetails /> ) : dToken ? ( <DoctorDashboard /> ) : ( <Home /> )  } />
+              <Route path='/login'  element={<Login />} />
               <Route path="/admin-dashboard" element={<Dashboard />} />
               <Route path="/all-appointments" element={<AllAppointments />} />
               <Route path="/add-doctor" element={<AddDoctor />} />

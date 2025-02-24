@@ -15,10 +15,13 @@ const doctorSchema = new mongoose.Schema(
     slots_booked: { type: Object, default: {} },
     address: { type: Object, required: true },
     date: { type: Number, required: true },
+    adminId: { type: mongoose.Schema.Types.ObjectId, ref: "hospitalAdmin", required: true },  // Admin's reference ID
+    hospitalName: { type: String, required: true },  // Hospital name as a string
   },
   { minimize: false }
 );
 
 const doctorModel =
   mongoose.models.doctor || mongoose.model("doctor", doctorSchema);
+
 export default doctorModel;

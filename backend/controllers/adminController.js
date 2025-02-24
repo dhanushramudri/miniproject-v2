@@ -92,6 +92,9 @@ const appointmentCancel = async (req, res) => {
 
 // API for adding Doctor
 const addDoctor = async (req, res) => {
+  console.log(req.body);  // Check if form data is properly sent
+  console.log(req.file);  // Check if image file is sent
+  
   try {
     const {
       name,
@@ -103,24 +106,35 @@ const addDoctor = async (req, res) => {
       about,
       fees,
       address,
+      adminId,  // Ensure you're using 'adminId'
+      hospitalName
     } = req.body;
     const imageFile = req.file;
+    console.log(adminId,hospitalName)
 
-    if (
-      !name ||
-      !email ||
-      !password ||
-      !speciality ||
-      !degree ||
-      !experience ||
-      !about ||
-      !fees ||
-      !address
-    ) {
-      return res.json({ success: false, message: "Missing Details" });
+    // Debugging for missing fields
+    let missingFields = [];
+    if (!name) missingFields.push("name");
+    if (!email) missingFields.push("email");
+    if (!password) missingFields.push("password");
+    if (!speciality) missingFields.push("speciality");
+    if (!degree) missingFields.push("degree");
+    if (!experience) missingFields.push("experience");
+    if (!about) missingFields.push("about");
+    if (!fees) missingFields.push("fees");
+    if (!address) missingFields.push("address");
+    if (!adminId) missingFields.push("adminId");
+    if (!hospitalName) missingFields.push("hospitalName");
+    if (!imageFile) missingFields.push("image");
+
+    if (missingFields.length > 0) {
+      return res.json({ 
+        success: false, 
+        message: `Missing the following details: ${missingFields.join(', ')}` 
+      });
     }
 
-    // validating email format
+    // Validate email format
     if (!validator.isEmail(email)) {
       return res.json({
         success: false,
@@ -128,7 +142,7 @@ const addDoctor = async (req, res) => {
       });
     }
 
-    // validating strong password
+    // Validate password length
     if (password.length < 8) {
       return res.json({
         success: false,
@@ -136,16 +150,17 @@ const addDoctor = async (req, res) => {
       });
     }
 
-    // hashing password
+    // Hash the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // upload image to cloudinary
+    // Upload image to Cloudinary
     const imageUpload = await cloudinary.uploader.upload(imageFile.path, {
       resource_type: "image",
     });
     const imageUrl = imageUpload.secure_url;
 
+    // Prepare doctor data
     const doctorData = {
       name,
       email,
@@ -155,11 +170,14 @@ const addDoctor = async (req, res) => {
       degree,
       experience,
       about,
+       adminId, 
+      hospitalName,
       fees,
-      address: JSON.parse(address),
-      date: Date.now(), // Include date here
+      address: JSON.parse(address), 
+      date: Date.now(), 
     };
 
+    // Save the doctor
     const newDoctor = new doctorModel(doctorData);
     await newDoctor.save();
     res.json({ success: true, message: "Doctor Added" });
@@ -168,6 +186,9 @@ const addDoctor = async (req, res) => {
     res.json({ success: false, message: error.message });
   }
 };
+
+
+
 // API to get all doctors list for admin panel
 const allDoctors = async (req, res) => {
   try {
@@ -176,6 +197,30 @@ const allDoctors = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.json({ success: false, message: error.message });
+  }
+};
+
+const allDoctorsByAdmin = async (req, res) => {
+  try {
+    // Get adminId from request body
+    const { adminId } = req.body;
+
+    // Find all doctors where adminId matches
+    const doctors = await doctorModel.find({ adminId: adminId })
+      .select("-password")
+      .populate('adminId', 'hospitalName email'); // Optionally populate admin details
+
+    res.json({ 
+      success: true, 
+      doctors 
+    });
+    
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message 
+    });
   }
 };
 
@@ -440,6 +485,7 @@ const getCurrentAdminDetails = async (req, res) => {
 
     // Find the admin in the database using the ID
     const admin = await hospitalAdminModel.findById(id);
+    // console.log(admin)
 
     // Check if admin exists
     if (!admin) {
@@ -448,6 +494,7 @@ const getCurrentAdminDetails = async (req, res) => {
 
     // Return the admin details (excluding the password)
     const adminDetails = {
+      id:admin.id,
       hospitalName: admin.hospitalName,
       adminName: admin.adminName,
       email: admin.email,
@@ -483,6 +530,7 @@ export {
   registerHospitalAdmin,
   getAllHospitalRegistrations,
   approveAdmin,
+  allDoctorsByAdmin,
   rejectAdmin,
   getPendingAdmins,
 };

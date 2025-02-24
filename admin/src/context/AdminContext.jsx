@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 
 export const AdminContext = createContext();
 
+
 const AdminContextProvider = (props) => {
   // State for hospital admin registrations, initialized as an empty array
   const [registrations, setRegistrations] = useState([]);
@@ -21,6 +22,9 @@ const AdminContextProvider = (props) => {
   const [doctors, setDoctors] = useState([]);
   // State for dashboard data, initialized as false (or can be set to a default value)
   const [dashData, setDashData] = useState(false);
+  const [doctorsByAdmin,setDoctorsByAdmin] = useState([])
+  const [loading,setLoading] = useState(true)
+  const [error,setError] = useState()
 
   // Function to get all hospital admin registrations from the backend API
 
@@ -123,6 +127,71 @@ const AdminContextProvider = (props) => {
     }
   };
 
+
+  const fetchAdminDetails = async () => {
+    try {
+      const token = localStorage.getItem("aToken");
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+  
+      const response = await fetch("http://localhost:4000/api/admin/profile", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      const data = await response.json();
+  
+      if (data.success) {
+        // Check if the admin is approved
+        if (!data.admin.isApproved) {
+          throw new Error("Admin is not approved yet");
+        }
+  
+        return data.admin; // Return admin details here
+      } else {
+        throw new Error(data.message || "Failed to fetch admin details");
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const getAllDoctorsByAdmin = async () => {
+    try {
+      // Get admin details first
+      const adminDetails = await fetchAdminDetails();
+      if (!adminDetails) {
+        throw new Error("Failed to fetch admin details");
+      }
+      console.log("adminDetails", adminDetails);
+  
+      const { data } = await axios.post(
+        `${backendUrl}/api/admin/getdoctors-by-admin`,
+        {
+          adminId: adminDetails.id, // Send adminId in request body
+        },
+        {
+          headers: { aToken },
+        }
+      );
+  
+      if (data.success) {
+        setDoctorsByAdmin(data.doctors);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+      console.error("Error fetching doctors:", error);
+    }
+  };
+  
+
+
   // Function to change doctor's availability (enable/disable)
   const changeAvailability = async (docId) => {
     try {
@@ -211,9 +280,11 @@ const AdminContextProvider = (props) => {
     getDashData,
     cancelAppointment,
     getAllRegistrations,
+    getAllDoctorsByAdmin,
     registrations,
     dashData,
     approveAdmin,
+    doctorsByAdmin,
     rejectAdmin,
   };
 
