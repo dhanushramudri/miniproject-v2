@@ -22,6 +22,7 @@ const AdminDetails = () => {
   }, []);
 
   console.log(registrations);
+  
 
   useEffect(() => {
     const fetchAdminDetails = async () => {
@@ -180,16 +181,6 @@ const AdminDetails = () => {
                   <p className="text-sm text-gray-500">Address</p>
                   <p className="font-medium text-gray-800">
                     {adminData.address}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Calendar className="h-5 w-5 text-gray-500" />
-                <div>
-                  <p className="text-sm text-gray-500">Registered On</p>
-                  <p className="font-medium text-gray-800">
-                    {formatDate(adminData.createdAt)}
                   </p>
                 </div>
               </div>
