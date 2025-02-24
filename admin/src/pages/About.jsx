@@ -3,10 +3,11 @@ import { assets } from '../assets/assets'
 
 const About = () => {
   return (
-    <div>
+    <div className="flex flex-col  justify-center px-10">
 
-      <div className='text-center text-2xl pt-10 text-[#707070]'>
-        <p>ABOUT <span className='text-gray-700 font-semibold'>US</span></p>
+
+      <div className='text-center text-2xl pt-10 text-[#707070] '>
+        <p>ABOUT <span className='text-gray-700 font-semibold '>US</span></p>
       </div>
 
       <div className='my-10 flex flex-col md:flex-row gap-12'>
